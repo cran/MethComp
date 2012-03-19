@@ -1,7 +1,8 @@
 Meth <-
-function( data=NULL,
-          meth="meth", item="item", repl=NULL, y="y",
-          print=!is.null(data), keep.vars=!is.null(data) )
+function( data = NULL,
+          meth = "meth", item="item", repl=NULL, y="y",
+         print = !is.null(data),
+     keep.vars  =!is.null(data) )
 {
 dfr <- deparse(substitute(data))
 was.dfr <- is.data.frame( data )
@@ -47,7 +48,7 @@ if( methods.in.y )
     item <- match( item, dfr.nam )
   if( is.numeric(item) & length(item)==1 )
     {
-    taken <- item.col <- item
+    taken <- c(taken,item.col<-item)
     item <- data[,item]
     }
   else item <- rows
@@ -58,7 +59,7 @@ if( methods.in.y )
   if( is.numeric(repl) & length(repl)==1 )
     {
     repl <- data[,repl]
-    taken <- repl.col <- repl
+    taken <- c(taken,repl.col<-repl)
     }
   else repl <- make.repl( data.frame(meth=rep(1,Nr),item=item) )$repl
 
@@ -85,7 +86,7 @@ else
     meth <- data[,meth]
     }
   if( is.na(meth)[1] ) stop( "\nmeth not properly specified.")
-  
+
   # Item
   if( is.character(item) )
     item <- match( item, dfr.nam )
@@ -157,7 +158,7 @@ if( was.dfr & is.logical(keep.vars) )
     names(res)[-(1:4)] <- dfr.nam[-taken]
     }
   }
-# Keep only slected variables
+# Keep only the selected variables
 if( was.dfr & is.character(keep.vars) )
   keep.vars <- match( keep.vars, names(data) )
 if( was.dfr & is.numeric(keep.vars) )
@@ -190,17 +191,34 @@ cat( "The following variables from the dataframe\n\"",
                                                paste(dfr.nam[   y.col],collapse=" "),
             "\n" ),
      sep="" )
-            
+
 if( print )  print( summary.Meth( res ) )
 
 if( made.repl )
   cat( "\nNOTE: Replication numbers generated in the order of the data\n" )
 if( max( with( res, table( meth, item, repl ) ) ) > 1 )
   cat( "\nWARNING: You have chosen a replicate variable which is not unique\n",
-       "        within each (n,item).\n" )
+       "        within each (meth,item).\n" )
 
 attr(res,"row.names") <- 1:nrow(res)
 invisible( res )
+}
+
+# Calculation of means over replicates
+mean.Meth <-
+function( x, simplify=FALSE, ... )
+{
+tmp <- aggregate( x$y, list( meth=x$meth, item=x$item ), FUN=mean )
+if( simplify )
+  {
+  names( tmp )[3] <- "y"
+  return( invisible( tmp ) )
+  }
+else
+  {
+  names( tmp )[3] <- "mean.y"
+  return( invisible( merge(x,tmp) ) )
+  }
 }
 
 # Utilities needed to preserve the Meth attribute
