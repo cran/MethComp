@@ -188,7 +188,7 @@ m <- jags.model( file = bugs.code.file,
                 inits = list.ini,
               n.adapt = n.burnin )
 cat("Sampling:\n")
-res <- coda::coda.samples( m,
+res <- rjags::coda.samples( m,
        variable.names = names( list.ini[[1]] ),
                n.iter = n.iter-n.burnin,
                  thin = n.thin )

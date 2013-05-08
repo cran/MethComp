@@ -1,5 +1,5 @@
 Package: MethComp
-Version: 1.22.1
+Version: 1.22.2
 Date: 2013-05-08
 Title: Functions for Analysis of Agreement in Method Comparison Studies
 Author: Bendix Carstensen, Lyle Gurrin, Claus Ekstrom, Michal Figurski
@@ -10,7 +10,7 @@ Description: Methods (standard and advanced) for analysis of agreement
         between measurement methods.
 License: GPL (>= 2)
 URL: http://BendixCarstensen.com/MethComp/
-Packaged: 2015-03-08 15:12:16 UTC; ripley
+Packaged: 2015-03-31 16:31:15 UTC; ripley
 NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2015-03-08 16:12:46
+Date/Publication: 2015-03-31 18:44:43
