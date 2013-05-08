@@ -1,7 +1,64 @@
-Version 1.15 :
+Version 1.22
+
+o Platform checking in MCmcmc updated, and checks for platform and
+  package availability is now subsequent to printing of a BUGS program
+  using argument code.only=TRUE
+
+Version 1.21
+
+o Bug in converting a MCmcmc object correctly to MethComp format if
+  more than 2 methods were present. Now fixed.
+
+Version 1.20
+
+o VC.est.fixed updated with the possibility of having the MxI random
+  effects correlated within items.
+
+o A *SERIOUS* bug in VC.est.fixed and VC.est.random have been
+  corrected: The estimated residual variances were shown in
+  alphabetical order of the method names instead of in the same order
+  as the method levels. Hence analyses by AltReg and BA.est prior to
+  version 1.20 in datasets where method names are not in alphabetical
+  order will be wrong.
+
+Version 1.19
+
+o New 'predict' method for Passing-Bablok regression (PBreg). It 
+  follows the syntax of predict.lm (to an extent) and allows for
+  calculation of confidence intervals.
+
+o Updated plot method for PBreg - now shows correct confidence boundaries
+  for the fit.  
+
+o DA.reg updated so that the LoA is included too. Documentation
+  accordingly updated.
+
+Version 1.18
+
+o Use of the alpha= argument crashed lines.MethComp (and all the
+  functions that call this). Fixed.
+
+o Checking for coda, R2WinBUGS and rjags improved to produce fewer
+  weird error messages.
+
+Version 1.17
+
+o An argument mult=FALSE is added to BA.plot (and to plot.MethComp,
+  lines.MethComp and points.Methcomp), which for Bland-Altman plots
+  plots ratios on a log-scale instead of differences on a linear scale.
+
+o The ridiculous functions min.Meth, max.Meth and median.Meth removed
+  again. Only mean.Meth and sort.Meth that takes means / sorts
+  measurements within item/replicate are preserved.
+
+Version 1.16
+
+o mean.Meth was not exported, it is now.
+
+Version 1.15
 
 o BA.plot is now in a new version essentially usng the facilities
-  available from at MethComp-object derived from DA.reg. 
+  available from at MethComp-object derived from DA.reg.
   The old version is still available as AB.plot.
 
 o JAGS is now recognized as a value for the program= argument to
@@ -9,16 +66,16 @@ o JAGS is now recognized as a value for the program= argument to
 
 o More intuitive example in the Deming help page, thanks to Roland Fuss.
 
-Version 1.14 :
+Version 1.14
 
 o Further bug-fixes in VC.est.random getting the estimated variances
   right. (CTEk)
 
-Version 1.13 :
+Version 1.13
 
 o Bug-fixes in VC.est.random getting the estimated variances right. (CTEk)
 
-Version 1.12 :
+Version 1.12
 
 o Complete rewrite of BA.plot, the old still available, the new
   version is so far called AB.plot. AB.plot creates a MethComp object

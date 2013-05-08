@@ -3,6 +3,7 @@ function( data,
         linked = TRUE,  # Fit a model with replicate by item interaction
            IxR = has.repl(data), # Fit a model with replicate by item interaction
            MxI = has.repl(data), # To fit the model with a method by item interaction
+        corMxI = FALSE, # Should method by item effects be correlated within items?
         varMxI = TRUE,  # Should method by item have method-specific variance?
         IxR.pr = FALSE, # Should the IxR varation be included with the prediction var?
           bias = TRUE,  # Should we estimate a bias between the methods?
@@ -45,6 +46,7 @@ if( !is.null(Transform) )
 model.fit <- VC.est( data = dfr,
                       IxR = IxR,
                       MxI = MxI,
+                   corMxI = corMxI,
                    varMxI = varMxI,
                      bias = bias,
             random.raters = random.raters,
@@ -121,8 +123,8 @@ if (random.raters) {
   rownames( LoA ) <- "Rand. rater - rand. rater"
 
   LoA[1,4] <- sqrt( pred.var )
-  LoA[1,2] <- - cl.fact*LoA[1,4]
-  LoA[1,3] <- cl.fact*LoA[1,4]
+  LoA[1,2] <- -cl.fact*LoA[1,4]
+  LoA[1,3] <-  cl.fact*LoA[1,4]
 }
 else {
   LoA <- LoA[-diags,,drop=FALSE]

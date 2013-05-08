@@ -16,7 +16,7 @@ bugs.code.file = "model.txt",
       ini.mult = 2,
       list.ini = TRUE,
            org = FALSE,
-       program = "BRugs",
+       program = "JAGS",
      Transform = NULL,
      trans.tol = 1e-6,
            ... )
@@ -30,28 +30,6 @@ if( !is.null(Transform) )
   check.trans( Transform, data$y, trans.tol=trans.tol )
   data$y <- Transform$trans( data$y )
   }
-
-# Check the availability of required packages
-Got.coda <- require( coda )
-Got.R2WB <- require( R2WinBUGS )
-Got.BRugs<- require( BRugs )
-Got.jags <- require( rjags )
-if( !Got.coda | !Got.R2WB | ( !Got.BRugs & !Got.jags ) )
-  stop( "Using the MCmcmc function requires that\n",
-        "the packages 'R2WinBUGS' or 'rjags' as well as 'coda' are installed.\n",
-        "In addition WinBUGS, JAGS or openbugs is required too.\n",
-        "All installed packages are shown if you type 'library()'." )
-
-# Since we are using Brugs we only continue if on a windows system:
-if( substr(version$os,1,5)!="mingw" & !Got.jags )
-  {
-  cat( "The MCmcmc function only works on Windows unless you have JAGS\n" )
-  return( NULL )
-  }
-
-if(  is.null(bugs.directory) &&
-    !is.null(bugs.dir <- getOption("R2WinBUGS.bugs.directory")) )
-  bugs.directory <- bugs.dir
 
 # Check that a dataframe is supplied
 if( !is.data.frame(data) | missing( data ) )
@@ -71,17 +49,6 @@ program <- if(        program %in% c("brugs","openbugs","ob") ) "openbugs"
            else { if( program %in% c(      "jags","jag","jg") )     "jags"
            else stop( "\n\nProgram '", program, "' not supported!" )
            } }
-
-# Is the location of WinBUGS supplied if needed ?
-if( !code.only & is.null( bugs.directory ) & program=="winbugs" ) stop(
-"\nYou must supply the name of the folder where WinBUGS is installed,",
-"\neither by using the parameter bugs.directory=...,",
-"\n    or by setting options(bugs.directory=...).",
-"\nThe latter will last you for the rest of your session.\n" )
-
-if( !Got.BRugs & program=="openbugs" )
-  stop( "Using the MCmcmc function with Brugs/openbugs option requires",
-        "that the BRugs package is installed\n" )
 
 # Fill in the variance components arguments:
 if( missing(MxI) ) MxI <- matrix
@@ -121,7 +88,7 @@ cat( if( code.only ) "\nBugs program for a model with"
      if(  MxI & !IxR ) "\n- method by item interaction:",
      if( !MxI &  IxR ) "\n- item by replicate interaction:",
      if(  MxI &  IxR ) "\n- method by item and item by replicate interaction:",
-     if( code.only & !missing( bugs.code.file) )
+     if( code.only & !missing( bugs.code.file) & bugs.code.file!="" )
          paste( "is written to the file",
                 paste( getwd(), bugs.code.file, sep="/" ), "\n" )
      else if ( !code.only )
@@ -148,7 +115,7 @@ write.bugs.code( int=int, slope=slope, MxI=MxI, IxR=IxR, varMxI=varMxI,
 
 # Generate the appropriate list of inits for the chains if not given:
 # (This first part is to allow list.ini=TRUE and code.only=TRUE to
-# generate inits too
+# generate inits too )
 do.inits <- !code.only
 if( is.logical( list.ini ) & code.only ) do.inits <- list.ini
 if( do.inits )
@@ -171,12 +138,51 @@ data.list <- c( list( N=N, Ni=Ni, Nm=Nm ),
                 as.list( bdat[,c("meth","item",if( IxR )"repl","y")] ) )
 flush.console()
 
+######################################################################
 # Run bugs
+
+# Check the availability of required package
+Got.coda  <- require( coda )
+Got.r2win <-
+Got.brugs <-
+Got.jags  <-
+Got.pr    <- FALSE
+if( tolower(substr(program,1,1)) %in% c("b","o","w") ) Got.r2win <- require( R2WinBUGS, quietly=TRUE )
+if( tolower(substr(program,1,1)) %in% c("b","o"    ) ) Got.brugs <- require( BRugs    , quietly=TRUE )
+if( tolower(substr(program,1,1)) %in% c("j"        ) ) Got.jags  <- require( rjags    , quietly=TRUE )
+if( !Got.coda |
+    !( Got.jags | Got.r2win ) )
+  stop( "Using the MCmcmc function for estimation requires that\n",
+        "the packages 'R2WinBUGS' or 'rjags' as well as 'coda' are installed.\n",
+        "In addition WinBUGS, JAGS or openBugs is required too.\n",
+        "(All installed packages are shown if you type 'library()'.)" )
+
+# Is the location of WinBUGS supplied if needed ?
+if( !code.only & is.null( bugs.directory ) & program=="winbugs" ) stop(
+"\nYou must supply the name of the folder where WinBUGS is installed,",
+"\neither by using the parameter bugs.directory=...,",
+"\n    or by setting options(bugs.directory=...).",
+"\nThe latter will last you for the rest of your session.\n" )
+
+if( !Got.brugs & program=="openbugs" )
+  stop( "Using the MCmcmc function with BRugs / openbugs option requires",
+        "that the BRugs package is installed\n" )
+
+# If we are using BRugs we only continue if on a windows system:
+if( .Platform$OS.type != "windows" & !Got.jags )
+  {
+  cat( "The MCmcmc function only works on non-Windows systems if you have JAGS\n" )
+  return( NULL )
+  }
+
+if(  is.null(bugs.directory) &&
+    !is.null(bugs.dir <- getOption("R2WinBUGS.bugs.directory")) )
+  bugs.directory <- bugs.dir
 
 if( program == "jags"  )
 {
 cat("Initialization and burn-in:\n")
-m <- jags.model( file = paste( getwd(), bugs.code.file, sep="/" ),
+m <- jags.model( file = bugs.code.file,
                  data = data.list,
              n.chains = n.chains,
                 inits = list.ini,
@@ -192,7 +198,7 @@ if( program %in% c("winbugs","openbugs")  )
 res <- bugs(  data = data.list,
 parameters.to.save = names( list.ini[[1]] ),
              inits = list.ini,
-        model.file = paste( getwd(), bugs.code.file, sep="/" ),
+        model.file = bugs.code.file,
           n.chains = n.chains,
             n.iter = n.iter,
           n.burnin = n.burnin,

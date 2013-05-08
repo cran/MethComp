@@ -8,7 +8,7 @@
   quantity by two different methods, the differences are plotted versus the
   average. The limits of agreement (prediction limits for the differences)
   are plotted, optionally a regression of differences of means is given
-  too. Works with \code{\link{Meth}} objects and \code{\link{MethComp}}
+  too. Works with \code{\link{Meth}} and \code{\link{MethComp}}
   objects too.
   }
 \usage{
@@ -40,7 +40,8 @@ BA.plot( y1, y2, meth.names = NULL,
                      col.eqn = col.lines,
                     font.eqn = 2,
                       digits = 2,
-                   Transform = NULL,
+                   Transform = if( mult ) "log" else NULL,
+                        mult = FALSE,
                        alpha = NULL,
                          ... )
  }
@@ -49,7 +50,7 @@ BA.plot( y1, y2, meth.names = NULL,
             \code{\link{Meth}} or a \code{\link{MethComp}} object, see details.}
   \item{y2}{Numerical vector of measurements by 2nd method. Must of same
             length as \code{x}. Ignored if a \code{\link{Meth}} or a
-	    \code{\link{MethComp}} objects is given for \code{x}.}
+	    \code{\link{MethComp}} objects is given for \code{y1}.}
   \item{meth.names}{Label for the method names.}
   \item{wh.comp}{Which methods should be compared. Either numerical or
     character.}
@@ -96,6 +97,12 @@ BA.plot( y1, y2, meth.names = NULL,
   \item{ Transform}{Transformation applied to data prior to
     analysis. Plots are made on the original scale after
     back-transformation.}
+  \item{      mult}{Logical. If TRUE, ratios of measurement instead of
+    differences will be plotted in the Bland-Altman plot on a logarithmic
+    axis, and limits of agreement will be given on this scale?
+    This gives the same analysis as using \code{Transform="log"}, but a different
+    plot. Using another transformation than the log is accommodated, but
+    no LoA is shown on the axis.}
   \item{     alpha}{1 minus the confidence level. If \code{NULL} a
     multiplier of 2 is used for constructing prediction limits,
     otherwise a t-quantile with d.f. equal th number of items minus 1.}
@@ -123,7 +130,7 @@ B Carstensen: Comparing methods of measurement: Extending the LoA by
   }
 \author{
   Bendix Carstensen \email{bxc@steno.dk},
-  \url{http://www.biostat.ku.dk/~bxc}.
+  \url{http://BendixCarstensen.com}.
   }
 \seealso{
   \code{\link{BA.est}}, \code{\link{DA.reg}}, \code{\link{MCmcmc}}.
@@ -139,7 +146,7 @@ par( mfrow=c(2,2) )
 BA.plot( ox, model=NULL, repl.conn=TRUE, col.lines="blue",
          axlim=c(0,100), diflim=c(-50,50), xaxs="i", yaxs="i",
          las=1, eqn=TRUE, dif.type="lin", pl.type="BA", sd.type="lin",
-        grid=1:9*10, digits=3,font.eqn=1)
+         grid=1:9*10, digits=3,font.eqn=1)
 par(new=TRUE)
 BA.plot( ox, model="linked", repl.conn=TRUE, col.lines="red",
          axlim=c(0,100), diflim=c(-50,50), xaxs="i", yaxs="i",
@@ -153,26 +160,26 @@ par(new=TRUE)
 BA.plot( ox, model="linked", repl.conn=TRUE, col.lines="red",
          axlim=c(0,100), diflim=c(-50,50), xaxs="i", yaxs="i",
          las=1, eqn=FALSE, dif.type="lin", pl.type="conv", sd.type="lin",
-        grid=1:9*10, digits=3)
+         grid=1:9*10, digits=3)
 # The same again, but now logit-transformed
 BA.plot( ox, model=NULL, repl.conn=TRUE, col.lines="blue",
          axlim=c(0,100), diflim=c(-50,50), xaxs="i", yaxs="i",
          las=1, eqn=TRUE, dif.type="lin", pl.type="BA", sd.type="lin",
-        grid=1:9*10, digits=3,font.eqn=1,Transform="pctlogit")
+         grid=1:9*10, digits=3,font.eqn=1,Transform="pctlogit")
 par(new=TRUE)
 BA.plot( ox, model="linked", repl.conn=TRUE, col.lines="red",
          axlim=c(0,100), diflim=c(-50,50), xaxs="i", yaxs="i",
          las=1, eqn=FALSE, dif.type="lin", pl.type="BA", sd.type="lin",
-        grid=1:0*10, digits=3,Transform="pctlogit")
+         grid=1:0*10, digits=3,Transform="pctlogit")
 BA.plot( ox, model=NULL, repl.conn=TRUE, col.lines="blue",
          axlim=c(0,100), diflim=c(-50,50), xaxs="i", yaxs="i",
          las=1, eqn=TRUE, dif.type="lin", pl.type="conv", sd.type="lin",
-        grid=1:9*10, digits=3,font.eqn=1,Transform="pctlogit")
+         grid=1:9*10, digits=3,font.eqn=1,Transform="pctlogit")
 par(new=TRUE)
 BA.plot( ox, model="linked", repl.conn=TRUE, col.lines="red",
          axlim=c(0,100), diflim=c(-50,50), xaxs="i", yaxs="i",
          las=1, eqn=FALSE, dif.type="lin", pl.type="conv", sd.type="lin",
-        grid=1:9*10, digits=3,Transform="pctlogit")
+         grid=1:9*10, digits=3,Transform="pctlogit")
 }
 \keyword{models}
 \keyword{design}

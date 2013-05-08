@@ -19,6 +19,7 @@ MethComp(obj)
 \method{plot}{MethComp}(x,
       wh.comp = 1:2,
       pl.type = "conv",
+     dif.type = "lin",
       sd.type = "const",
         axlim = range(x$data$y,na.rm=TRUE),
        diflim = axlim-mean(axlim),
@@ -37,15 +38,18 @@ MethComp(obj)
       col.eqn = col.lines,
      font.eqn = 2,
        digits = 2,
+         mult = FALSE,
         alpha = NULL,
           ... )
 \method{lines}{MethComp}(x,
                    wh.comp = getOption("MethComp.wh.comp"),
                    pl.type = getOption("MethComp.pl.type"),
+                  dif.type = getOption("MethComp.dif.type"),
                    sd.type = getOption("MethComp.sd.type"),
                  col.lines = "black",
                        lwd = c(3,1,1),
                     digits = 3,
+                      mult = FALSE,
                      alpha = NULL,
                        ... )
 \method{points}{MethComp}(x,
@@ -56,6 +60,7 @@ MethComp(obj)
                   repl.conn = FALSE,
                    col.conn = "gray",
                    lwd.conn = 1,
+                       mult = FALSE,
                         ... )
 }
 \arguments{
@@ -65,6 +70,9 @@ MethComp(obj)
   \item{pl.type}{Character. If "conv" it will be a plot of two methods against
                  each other, otherwise it will be a plot of the 1st minus the
                  2nd versus the average; a Bland-Altman type plot.}
+  \item{dif.type}{Character. If "lin" (the default) a linear
+    relationship between methods is allowed. Otherwise a constant
+    difference is assumed and LoA can be indicated on the plot.}
   \item{sd.type}{Should the estimated dependence of the SD (from
     \code{\link{DA.reg}} be used when plotting prediction limits?}
   \item{axlim}{The extent of the axes of the measurements.}
@@ -89,6 +97,8 @@ MethComp(obj)
   \item{font.eqn}{font for the conversion formula}
   \item{digits}{The number of digits after the decimal point in the
     conversion formulae.}
+  \item{mult}{Logical. Should ratios be plotted on a log-scale instead
+  of differences on a linear scale? See description of the argument for \code{\link{BA.plot}}.}
   \item{alpha}{1 minus the confidence level for the prediction
     interval. If not given, the prediction interval is constructed as
     plus/minus twice the SD.}
@@ -137,8 +147,9 @@ Bendix Carstensen, Steno Diabetes Center, \email{bxc@steno.dk}.
 data( ox )
 BA.ox <- BA.est( ox, linked=TRUE )
 print( BA.ox )
+\dontrun{
 AR.ox <- AltReg( ox, linked=TRUE  )
 print( AR.ox )
-plot( AR.ox )
+plot( AR.ox ) }
 }
 \keyword{design}
