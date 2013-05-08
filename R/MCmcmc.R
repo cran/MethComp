@@ -188,7 +188,7 @@ m <- jags.model( file = bugs.code.file,
                 inits = list.ini,
               n.adapt = n.burnin )
 cat("Sampling:\n")
-res <- coda.samples( m,
+res <- coda::coda.samples( m,
        variable.names = names( list.ini[[1]] ),
                n.iter = n.iter-n.burnin,
                  thin = n.thin )
@@ -271,7 +271,7 @@ function( obj, cols )
 if( !inherits( obj, "mcmc" ) &&
     !inherits( obj, "mcmc.list" ) ) stop( "obj must be a mcmc(.list) object" )
 if( inherits( obj, "mcmc.list" ) )
-  return( as.mcmc.list( lapply( obj, addcols.mcmc, cols ) ) )
+  return( coda::as.mcmc.list( lapply( obj, addcols.mcmc, cols ) ) )
 else
 {
 if( length(dim(cols))==1 && length(cols)<1 )
@@ -454,10 +454,10 @@ function( aa )
 zz <- list(list())
 for( i in 1:(dim(aa)[2]) )
    {
-   tmp <- coda:::mcmc( aa[,i,] )
+   tmp <- coda::mcmc( aa[,i,] )
    zz <- c( zz, list(tmp) )
    }
-return( coda:::mcmc.list( zz[-1] ) )
+return( coda::mcmc.list( zz[-1] ) )
 }
 
 ################################################################################
@@ -472,10 +472,10 @@ if( floor(n.sims)!=n.sims)
   stop( "Matrix supplied does not have nrows a multiple of n.chains" )
 for( i in 1:n.chains )
 {
-tmp <- coda:::mcmc( mm[(i-1)*n.sims+(1:n.sims),] )
+tmp <- coda::mcmc( mm[(i-1)*n.sims+(1:n.sims),] )
 zz <- c( zz, list(tmp) )
 }
-return( coda:::mcmc.list( zz[-1] ) )
+return( coda::mcmc.list( zz[-1] ) )
 }
 
 ################################################################################

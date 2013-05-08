@@ -107,7 +107,7 @@ function( obj,
           ... )
 {
 fv <- find.vars( obj, layout )
-xyplot( subset( obj, fv$sb ),
+lattice::xyplot( subset( obj, fv$sb ),
                    scales = list(x=list(relation=scales[1]),
                                  y=list(relation=scales[2])),
                    layout = fv$layout,
@@ -127,7 +127,7 @@ function( obj,
           ... )
 {
 fm <- find.mean( obj, layout=layout, par.type=par.type )
-xyplot( subset.MCmcmc( obj, fm$sb ),
+lattice::xyplot( subset.MCmcmc( obj, fm$sb ),
                    scales = list(x=list(relation=scales[1]),
                                  y=list(relation=scales[2])),
                    layout = fm$layout,
@@ -197,9 +197,9 @@ function( obj,
 {
 fv <- find.vars( obj )
 obj <- subset.MCmcmc( obj, fv$sb )
-if( !check ) obj <- as.mcmc(as.matrix(obj))
+if( !check ) obj <- coda::as.mcmc(as.matrix(obj))
 
-densityplot( obj,
+lattice::densityplot( obj,
           layout = fv$layout,
              lwd = lwd,
              col = col,
@@ -227,9 +227,9 @@ function( obj,
 fm <- find.mean( obj, layout=layout, par.type=par.type )
 obj <- subset.MCmcmc( obj, fm$sb )
 # If we believe in convergence
-if( !check ) obj <- as.mcmc(as.matrix(obj))
+if( !check ) obj <- coda::as.mcmc(as.matrix(obj))
 
-densityplot( obj,
+lattice::densityplot( obj,
           layout = fm$layout,
              lwd = lwd,
              col = col,
@@ -273,11 +273,11 @@ if( !is.null(col) )
   {
   col <- if( length(col)==nrow(sobj) ) col
          else
-         if( length(col)==nchain(x) ) rep(col,each=niter(x))
+         if( length(col)==coda::nchain(x) ) rep(col,each=coda::niter(x))
          else
          rep( col[1], nrow(sobj) )
   }
-else col <- rep(rainbow(nchain(x)),niter(x))
+else col <- rep(rainbow(coda::nchain(x)),coda::niter(x))
 if( toupper(scales)=="SAME" )
   {
   rg <- range( sobj )

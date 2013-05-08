@@ -1,5 +1,5 @@
 d1ade1942b19c73eaa0813fe4e32e484 *CHANGES
-2af1937aa3e42a509200ce4292c4733b *DESCRIPTION
+38bc0f4127e57aba12ece170621c393d *DESCRIPTION
 dd7a62f591e8e38fb07f092ccea76462 *NAMESPACE
 25896d609f9da1917a0218e56851ac9e *R/AltReg.R
 eb6a7e1a150a2464c486342e068115d4 *R/BA.est.R
@@ -7,8 +7,8 @@ eb6a7e1a150a2464c486342e068115d4 *R/BA.est.R
 185c52f2b20de90a791f451495f2778d *R/BlandAltman.R
 30005434dcc9c8a5e2684b7532c0f9c2 *R/DA.reg.r
 a274260e29238e4b2e8571df3f5ea879 *R/Deming.R
-91b9df816bf122b0fc3a5e88df4a02a9 *R/MCmcmc.R
-7b19636e7619dc2655a0727e4c1da894 *R/Meth.r
+d8c8e9f3d383b3b5b34a0da6b4e5bf00 *R/MCmcmc.R
+1e023b8ea1577be0148c2b50d96f4a4c *R/Meth.r
 c11f27964561fb1ae4b1fafdc78363b5 *R/Meth.sim.R
 b6679e71c84da562ccd587f36c567ea9 *R/MethComp.r
 854a4e5b1e586c76fbffea5cdc9ad9cc *R/TDI.R
@@ -17,7 +17,7 @@ bd0910a0d0fc5b7eab705bd716b61208 *R/VC.est.R
 db88bd1b72094ce1eb8f0c2ebd9935a8 *R/VC.est.random.R
 24dd60ab950f0387ec75ace4f95e6762 *R/abconv.R
 85dbbf397b9c21317307c242d5150537 *R/bothlines.R
-4ef26e8f5c279057785157ed1981919f *R/check.MCmcmc.R
+b6974f53a28ffba2008821f9ae7cdb3e *R/check.MCmcmc.R
 bd708fff27050371d767f5eddb1626cd *R/corr.measures.R
 9348f8f9f411c9467a452d24a4c20197 *R/pbreg.R
 38b6427a15414d157562644da10b9927 *R/perm.repl.R
@@ -25,7 +25,7 @@ bd708fff27050371d767f5eddb1626cd *R/corr.measures.R
 7c6d6e807ddbb5a7e8f88020b9e2c2ea *R/plot.Meth.R
 93a74b35f0f975e5c2bc95f5ea85b5ae *R/plot.VarComp.R
 e09d41286ecf466c7a94ccc31aecac00 *R/sample.Meth.r
-bf3c38fd5f79ee0ffbe37e889ab5a0e3 *R/subset.MCmcmc.R
+7fee9d6310d1f7a1a5eb680a0463970b *R/subset.MCmcmc.R
 0dbf069d08f4c9cf69b8c41c6d0af6a1 *R/summary.MCmcmc.R
 30aa89fc062f1ce9a0f14fed3c4af3cd *R/summary.Meth.R
 12922f97c71c639241901880564fdda0 *R/to.wide.R

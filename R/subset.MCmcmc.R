@@ -17,7 +17,7 @@ if( is.numeric(chains) )
   att <- attributes( x )
   x <- x[chains]
   attributes( x ) <- att
-  attributes( x )$mcmc.par$n.chains <- nchain(x)
+  attributes( x )$mcmc.par$n.chains <- coda::nchain(x)
   attributes( x )$mcmc.par$dim <- dim(as.matrix(x))
   }
 
@@ -68,7 +68,7 @@ function( x, ... )
 if( !inherits( x, "MCmcmc" ) ) stop( "The argument (here:",
                                        deparse( substitute( x ) ),
                                        ") must be a MCmcmc object." )
-res <- as.mcmc( as.matrix( x ) )
+res <- coda::as.mcmc( as.matrix( x ) )
 attributes( res ) <- attributes( x )
 class( res ) <- c("MCmcmc","mcmc")
 res
