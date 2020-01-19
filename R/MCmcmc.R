@@ -1,3 +1,151 @@
+#' Fit a model for method comparison studies using WinBUGS
+#' 
+#' A model linking each of a number of methods of measurement linearly to the
+#' "true" value is set up in BUGS and run via the function
+#' \code{\link[R2WinBUGS]{bugs}} from the \code{R2WinBUGS} package.
+#'
+#' The model set up for an observation \eqn{y_{mir}}{y_mir} is: \deqn{y_{mir} =
+#' \alpha_m + \beta_m(\mu_i+b_{ir} + c_{mi}) + }{y_mir = alpha_m +
+#' beta_m*(mu_i+b_ir+c_mi) + e_mir}\deqn{ e_{mir}}{y_mir = alpha_m +
+#' beta_m*(mu_i+b_ir+c_mi) + e_mir} where \eqn{b_{ir}}{b_ir} is a random
+#' \code{item} by \code{repl} interaction (included if \code{"ir"} is in \code{random})
+#' and \eqn{c_{mi}}{c_mi} is a random \code{meth} by \code{item} interaction
+#' (included if \code{"mi"} is in \code{random}). The \eqn{\mu_i}{mu_i}'s are
+#' parameters in the model but are not monitored --- only the
+#' \eqn{\alpha}{alpha}s, \eqn{\beta}{beta}s and the variances of
+#' \eqn{b_{ir}}{b_{ir}}, \eqn{c_{mi}}{c_{mi}} and \eqn{e_{mir}}{e_{mir}} are
+#' monitored and returned. The estimated parameters are only determined up to a
+#' linear transformation of the \eqn{\mu}{mu}s, but the linear functions
+#' linking methods are invariant. The identifiable conversion parameters are:
+#' \deqn{\alpha_{m\cdot k}=\alpha_m - \alpha_k \beta_m/\beta_k, \quad
+#' }{alpha_m|k=alpha_m-alpha_k beta_m/beta_k, beta_m|k=beta_m/beta_k}\deqn{
+#' \beta_{m\cdot k}=\beta_m/\beta_k}{alpha_m|k=alpha_m-alpha_k beta_m/beta_k,
+#' beta_m|k=beta_m/beta_k} The posteriors of these are derived and included in
+#' the \code{posterior}, which also will contain the posterior of the variance
+#' components (the SDs, that is).  Furthermore, the posterior of the point
+#' where the conversion lines intersects the identity as well as the prediction
+#' SDs between any pairs of methods are included.
+#' 
+#' The function \code{summary.MCmcmc} method gives estimates of the conversion
+#' parameters that are consistent. Clearly, \deqn{\mathrm{median}(\beta_{1\cdot
+#' 2})= }{median(beta.1.2)=1/median(beta.2.1)}\deqn{
+#' 1/\mathrm{median}(\beta_{2\cdot 1})}{median(beta.1.2)=1/median(beta.2.1)}
+#' because the inverse is a monotone transformation, but there is no guarantee
+#' that \deqn{\mathrm{median}(\alpha_{1\cdot 2})=
+#' \mathrm{median}(-\alpha_{2\cdot 1}/
+#' }{median(alpha.1.2)=median(-alpha.2.1/beta.2.1)}\deqn{ \beta_{2\cdot
+#' 1})}{median(alpha.1.2)=median(-alpha.2.1/beta.2.1)} and hence no guarantee
+#' that the parameters derived as posterior medians produce conversion lines
+#' that are the same in both directions. Therefore, \code{summary.MCmcmc}
+#' computes the estimate for \eqn{\alpha_{2\cdot 1}}{alpha.2.1} as
+#' \deqn{(\mathrm{median}(\alpha_{1\cdot 2})-\mathrm{median}(\alpha_{2\cdot 1})
+#' }{(median(alpha.1.2)-median(alpha.2.1)/ median(beta.2.1))/2}\deqn{
+#' /\mathrm{median}(\beta_{2\cdot 1}))/2}{(median(alpha.1.2)-median(alpha.2.1)/
+#' median(beta.2.1))/2} and the estimate of \eqn{\alpha_{1\cdot 2}}{alpha.1.2}
+#' correspondingly. The resulting parameter estimates defines the same lines.
+#' 
+#' @param data Data frame with variables \code{meth}, \code{item}, \code{repl}
+#' and \code{y}, possibly a \code{\link{Meth}} object.  \code{y} represents a
+#' measurement on an \code{item} (typically patient or sample) by method
+#' \code{meth}, in replicate \code{repl}.
+#' @param bias Character. Indicating how the bias between methods should be
+#' modelled. Possible values are \code{"none"}, \code{"constant"},
+#' \code{"linear"} and \code{"proportional"}. Only the first three letters are
+#' significant. Case insensitive.
+#' @param IxR Logical. Are the replicates linked across methods, i.e. should a
+#' random \code{item} by \code{repl} be included in the model.
+#' @param linked Logical, alias for \code{IxR}.
+#' @param MxI Logical, should a \code{meth} by \code{item} effect be included
+#' in the model?
+#' @param matrix Logical, alias for \code{MxI}.
+#' @param varMxI Logical, should the method by item effect have method-specific
+#' variances. Ignored if only two methods are compared.
+#' @param n.chains How many chains should be run by WinBUGS --- passed on to
+#' \code{bugs}.
+#' @param n.iter How many total iterations --- passed on to \code{bugs}.
+#' @param n.burnin How many of these should be burn-in --- passed on to
+#' \code{bugs}.
+#' @param n.thin How many should be sampled --- passed on to \code{bugs}.
+#' @param bugs.directory Where is WinBUGS (>=1.4) installed --- passed on to
+#' \code{bugs}. The default is to use a parameter from options(). If you use
+#' this routinely, this is most conveniently set in your \code{.Rprofile} file.
+#' @param debug Should WinBUGS remain open after running --- passed on to
+#' \code{bugs}.
+#' @param clearWD Should the working directory be cleared for junk files after
+#' the running of WinBUGS --- passed on to \code{bugs}.
+#' @param bugs.code.file Where should the bugs code go?
+#' @param code.only Should \code{MCmcmc} just create a bugs code file and a set
+#' of inits? See the \code{list.ini} argument.
+#' @param ini.mult Numeric. What factor should be used to randomly perturb the
+#' initial values for the variance components, see below in details.
+#' @param list.ini List of lists of starting values for the chains, or logical
+#' indicating whether starting values should be generated.  If \code{TRUE} (the
+#' default), the function VC.est will be used to generate initial
+#' values for the chains. \code{list.ini} is a list of length \code{n.chains}.
+#' Each element of which is a list with the following vectors as elements:
+#' \describe{ \item{\code{mu}}{- length I} \item{\code{alpha}}{- length M}
+#' \item{\code{beta}}{- length M} \item{\code{sigma.mi}}{- length M - if M is
+#' 2 then length 1} \item{\code{sigma.ir}}{- length 1}
+#' \item{\code{sigma.mi}}{- length M} \item{\code{sigma.res}}{- length M}} If
+#' \code{code.only==TRUE}, \code{list.ini} indicates whether a list of initial
+#' values is returned (invisibly) or not.  If \code{code.only==FALSE},
+#' \code{list.ini==FALSE} is ignored.
+#' @param org Logical. Should the posterior of the original model parameters be
+#' returned too? If \code{TRUE}, the \code{MCmcmc} object will have an
+#' attribute, \code{original}, with the posterior of the parameters in the
+#' model actually simulated.
+#' @param program Which program should be used for the MCMC simulation.
+#' Possible values are "\code{BRugs}", "\code{ob}", "\code{winbugs}", "\code{wb}" (WinBUGS), "\code{jags}"
+#' (JAGS). Case insensitive. Defaults to "\code{JAGS}" since: 1) JAGS is
+#' available on all platforms and 2) JAGS seems to be faster than BRugs on
+#' (some) windows machines.
+#' @param Transform Transformation of data (\code{y}) before analysis.  See
+#' \code{\link{choose.trans}}.
+#' @param trans.tol The tolerance used to check whether the supplied
+#' transformation and its inverse combine to the identity.
+#' @param ... Additional arguments passed on to \code{\link[R2WinBUGS]{bugs}}.
+#' @return If \code{code.only==FALSE}, an object of class \code{MCmcmc} which
+#' is a \code{\link[coda]{mcmc.list}} object of the relevant parameters, i.e.
+#' the posteriors of the conversion parameters and the variance components
+#' transformed to the scales of each of the methods.
+#' 
+#' Furthermore, the object have the following attributes:
+#' \item{random}{Character vector indicating which random effects ("ir","mi")
+#' were included in the model.} \item{methods}{Character vector with the method
+#' names.} \item{data}{The data frame used in the analysis. This is used in
+#' \code{\link{plot.MCmcmc}} when plotting points.} \item{mcmc.par}{A list
+#' giving the number of chains etc. used to generate the object.}
+#' \item{original}{If \code{org=TRUE}, an \code{\link[coda]{mcmc.list}} object
+#' with the posterior of the original model parameters, i.e.  the variance
+#' components and the unidentifiable mean parameters.} \item{Transform}{The
+#' transformation used to the measurements before the analysis.} If
+#' \code{code.only==TRUE}, a list containing the initial values is generated.
+#'
+#' @author Bendix Carstensen, Steno Diabetes Center,
+#' \url{http://BendixCarstensen.com}, Lyle Gurrin, University of Melbourne,
+#' \url{http://www.epi.unimelb.edu.au/about/staff/gurrin-lyle}.
+#' @seealso \code{\link{BA.plot}}, \code{\link{plot.MCmcmc}},
+#' \code{\link{print.MCmcmc}}, \code{\link{check.MCmcmc}}
+#' @references B Carstensen: Comparing and predicting between several methods
+#' of measurement, Biostatistics, 5, pp 399-413, 2004
+#' @keywords models design regression nonlinear
+#' @examples
+#' 
+#' data( ox )
+#' str( ox )
+#' ox <- Meth( ox )
+#' # Writes the BUGS program to your console
+#' MCmcmc( ox, MI=TRUE, IR=TRUE, code.only=TRUE, bugs.code.file="" )
+#' 
+#' ### What is written here is not necessarily correct on your machine.
+#' # ox.MC <- MCmcmc( ox, MI=TRUE, IR=TRUE, n.iter=100, program="JAGS" )
+#' # ox.MC <- MCmcmc( ox, MI=TRUE, IR=TRUE, n.iter=100 )
+#' #  data( ox.MC )
+#' #   str( ox.MC )
+#' # print( ox.MC )
+#' 
+#' @importFrom coda varnames
+#' @export
 MCmcmc <-
 function( data,
           bias = "linear",
@@ -44,11 +192,13 @@ slope <- substr(bias,1,3) %in% c("lin","pro")
 
 # Make program choice case-insensitive
 program <- tolower( program )
-program <- if(        program %in% c("brugs","openbugs","ob") ) "openbugs"
-           else { if( program %in% c(         "winbugs","wb") )  "winbugs"
+program <- #if(        program %in% c("brugs","openbugs","ob") ) "openbugs"
+           #else { 
+
+           if ( program %in% c(         "winbugs","wb") )  "winbugs"
            else { if( program %in% c(      "jags","jag","jg") )     "jags"
            else stop( "\n\nProgram '", program, "' not supported!" )
-           } }
+           }
 
 # Fill in the variance components arguments:
 if( missing(MxI) ) MxI <- matrix
@@ -142,14 +292,14 @@ flush.console()
 # Run bugs
 
 # Check the availability of required package
-Got.coda  <- require( coda )
+Got.coda  <- TRUE # requireNamespace( "coda" )
 Got.r2win <-
 Got.brugs <-
 Got.jags  <-
 Got.pr    <- FALSE
-if( tolower(substr(program,1,1)) %in% c("b","o","w") ) Got.r2win <- require( R2WinBUGS, quietly=TRUE )
-if( tolower(substr(program,1,1)) %in% c("b","o"    ) ) Got.brugs <- require( BRugs    , quietly=TRUE )
-if( tolower(substr(program,1,1)) %in% c("j"        ) ) Got.jags  <- require( rjags    , quietly=TRUE )
+# if( tolower(substr(program,1,1)) %in% c("b","o","w") ) Got.r2win <- requireNamespace( "R2WinBUGS", quietly=TRUE )
+#if( tolower(substr(program,1,1)) %in% c("b","o"    ) ) Got.brugs <- requireNamespace( "BRugs"    , quietly=TRUE )
+if( tolower(substr(program,1,1)) %in% c("j"        ) ) Got.jags  <- requireNamespace( "rjags"    , quietly=TRUE )
 if( !Got.coda |
     !( Got.jags | Got.r2win ) )
   stop( "Using the MCmcmc function for estimation requires that\n",
@@ -158,15 +308,15 @@ if( !Got.coda |
         "(All installed packages are shown if you type 'library()'.)" )
 
 # Is the location of WinBUGS supplied if needed ?
-if( !code.only & is.null( bugs.directory ) & program=="winbugs" ) stop(
-"\nYou must supply the name of the folder where WinBUGS is installed,",
-"\neither by using the parameter bugs.directory=...,",
-"\n    or by setting options(bugs.directory=...).",
-"\nThe latter will last you for the rest of your session.\n" )
+#if( !code.only & is.null( bugs.directory ) & program=="winbugs" ) stop(
+#"\nYou must supply the name of the folder where WinBUGS is installed,",
+#"\neither by using the parameter bugs.directory=...,",
+#"\n    or by setting options(bugs.directory=...).",
+#"\nThe latter will last you for the rest of your session.\n" )
 
-if( !Got.brugs & program=="openbugs" )
-  stop( "Using the MCmcmc function with BRugs / openbugs option requires",
-        "that the BRugs package is installed\n" )
+#if( !Got.brugs & program=="openbugs" )
+#  stop( "Using the MCmcmc function with BRugs / openbugs option requires",
+#        "that the BRugs package is installed\n" )
 
 # If we are using BRugs we only continue if on a windows system:
 if( .Platform$OS.type != "windows" & !Got.jags )
@@ -182,7 +332,7 @@ if(  is.null(bugs.directory) &&
 if( program == "jags"  )
 {
 cat("Initialization and burn-in:\n")
-m <- jags.model( file = bugs.code.file,
+m <- rjags::jags.model( file = bugs.code.file,
                  data = data.list,
              n.chains = n.chains,
                 inits = list.ini,
@@ -194,26 +344,26 @@ res <- rjags::coda.samples( m,
                  thin = n.thin )
 }
 
-if( program %in% c("winbugs","openbugs")  )
-res <- bugs(  data = data.list,
-parameters.to.save = names( list.ini[[1]] ),
-             inits = list.ini,
-        model.file = bugs.code.file,
-          n.chains = n.chains,
-            n.iter = n.iter,
-          n.burnin = n.burnin,
-            n.thin = n.thin,
-    bugs.directory = bugs.directory,
-             debug = debug,
-           program = program,
-           codaPkg = TRUE )
+#if( program %in% c("winbugs","openbugs")  )
+#res <- openbugs::bugs(  data = data.list,
+#parameters.to.save = names( list.ini[[1]] ),
+#             inits = list.ini,
+#        model.file = bugs.code.file,
+#          n.chains = n.chains,
+#            n.iter = n.iter,
+#          n.burnin = n.burnin,
+#            n.thin = n.thin,
+#    bugs.directory = bugs.directory,
+#             debug = debug,
+#           program = program,
+#           codaPkg = TRUE )
 
 # and read the result into an mcmc.list object
 # --- different approach for WinBUGS and OpenBUGS
-if( program == "winbugs"  )
-  res <- read.bugs( res, quiet=TRUE )
-if( program == "openbugs" )
-  res <- sims.array.2.mcmc.list( res$sims.array )
+#if( program == "winbugs"  )
+#  res <- read.bugs( res, quiet=TRUE )
+#if( program == "openbugs" )
+#  res <- sims.array.2.mcmc.list( res$sims.array )
 
 # Now produce a mcmc object with the relevant parameters
 

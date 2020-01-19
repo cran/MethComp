@@ -4,6 +4,52 @@
 trace <- function (obj, ...) UseMethod("trace")
 post  <- function (obj, ...) UseMethod("post")
 
+
+
+
+#' Functions to graphically assess the convergence of the MCMC-simulation in a
+#' MCmcmc object
+#' 
+#' These functions display traces for the relevant subset of the parameters in a MCmcmc object.
+#' 
+#' A \code{Lattice} plot is returned, which means that it must \code{print}ed
+#' when these functions are called in a batch program or inside another
+#' function or for-loop.
+#' 
+#' \code{trace} plots traces of the sampled chains, \code{post} plots posterior
+#' densities of the parameters and \code{pairs} plots a scatter-plot matrix of
+#' bivariate marginal posterior distributions.
+#' 
+#' @aliases check.MCmcmc trace.MCmcmc post.MCmcmc
+#' @param obj A \code{MCmcmc} object.
+#' @param what Character indicating what parameters to plot.  Possible values
+#' are \code{"sd"} or \code{"var"} which gives plots for the variance
+#' components (on the sd. scale), \code{"beta"} or \code{"slope"}, which gives
+#' plots for slope parameters and \code{"alpha"} or \code{"int"}, which gives
+#' plots for the intercept parameters.
+#' @param scales Character vector of length two, with possible values "same" or
+#' "free", indicating whether x- and y-axes of the plots should be constrained
+#' to be the same across panels. For \code{pairs} only the first element is
+#' used to decide whether all panles should have the same axes.
+#' @param layout Character. If \code{"col"} parameters are displayed columnwise
+#' by method, if \code{"row"} they are displayed row-wise.
+#' @param aspect How should the panels be scaled. Default (\code{"fill"}) is to
+#' make a panels take up as much place as possible.
+#' @param \dots Further aruments passed on to the \code{\link{Lattice}}
+#' @return A \code{\link{Lattice}} plot.
+#' @author Bendix Carstensen, Steno Diabetes Center, \email{bendix.carstensen@@regionh.dk },
+#' \url{http://BendixCarstensen.com}.
+#' @seealso \code{\link{MCmcmc}}, \code{\link{plot.MCmcmc}},
+#' \code{\link{ox.MC}}, \code{\link{sbp.MC}}
+#' @keywords models
+#' @examples
+#' 
+#' # Load a provided MCmcmc object
+#' data( ox.MC )
+#' trace.MCmcmc( ox.MC, what="beta" )
+#' pairs( ox.MC, what="sd" )
+#' 
+#' @export trace.MCmcmc
 trace.MCmcmc <-
 function( obj, what="sd",
        scales = c("same","free"),
@@ -11,7 +57,7 @@ function( obj, what="sd",
        aspect = "fill",
           ... )
 {
-require( coda )
+# require( coda )
 # Expand scales so a single value is sufficient
 scales <- c(scales,scales)
 # Decide which function to invoke
@@ -151,7 +197,7 @@ function( obj, what="sd",
        aspect = "fill",
           ... )
 {
-require( coda )
+# require( coda )
 scales <- c(scales,scales)
 # Decide on coloring
 col <- if( check ) rainbow(length(obj)) # number of chains
@@ -212,6 +258,8 @@ lattice::densityplot( obj,
              ... )
 }
 
+
+#' @export
 post.mean <-
 function( obj,
         check = TRUE,
@@ -242,6 +290,40 @@ lattice::densityplot( obj,
              ... )
 }
 
+
+#' Create a pairs plot for an MCmcmc object
+#'
+#' @param x An \code{MCmcmc} object.
+#' @param what Character indicating what parameters to plot.  Possible values
+#' are \code{"sd"} or \code{"var"} which gives plots for the variance
+#' components (on the sd. scale), \code{"beta"} or \code{"slope"}, which gives
+#' plots for slope parameters and \code{"alpha"} or \code{"int"}, which gives
+#' plots for the intercept parameters.
+#'
+#' @param subset Character or numerical indicating the columns of the posterior
+#' that should be plotted by \code{pairs}.
+#' @param col Color of the lines points used for plotting of the posterior
+#' densities.
+#' @param pch Plot symbol for the points.
+#' @param cex Plot character size for points in \code{pairs}.
+#' @param scales Character vector of length two, with possible values "same" or
+#' "free", indicating whether x- and y-axes of the plots should be constrained
+#' to be the same across panels. For \code{pairs} only the first element is
+#' used to decide whether all panles should have the same axes.
+#' @param \dots Further aruments passed on to the \code{\link{Lattice}}
+#' function called: \code{trace} calls \code{\link{xyplot}} from the
+#' \code{coda} package, \code{post} calls \code{\link{densityplot}} from the
+#' \code{coda} package, % \code{acf} calls \code{\link{acfplot}}, \code{pairs}
+#' calls \code{\link{pairs}} from the \code{graphics} package.
+#' @return A \code{\link{Lattice}} plot.
+#' @author Bendix Carstensen, Steno Diabetes Center, \email{bendix.carstensen@@regionh.dk },
+#' \url{http://BendixCarstensen.com}.
+#' @seealso \code{\link{MCmcmc}}, \code{\link{plot.MCmcmc}},
+#' \code{\link{ox.MC}}, \code{\link{sbp.MC}}
+#' @keywords models
+#'
+#' @rdname pairs
+#' @export
 pairs.MCmcmc <-
 function( x, what = "sd",
            subset = NULL,

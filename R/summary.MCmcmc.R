@@ -1,8 +1,16 @@
+#' Summary
+#'
+#'
+#' @param object An \code{MCmcmc} object
+#' @param alpha 1 minus the the confidence level
+#' @param ... Not used
+#'
+#' @rdname summary
+#' @export
 summary.MCmcmc <-
-function( object, alpha=0.05,
-          ... )
+function( object, alpha=0.05, ... )
 {
-Got.coda <- require( coda )
+Got.coda <- requireNamespace( "coda" )
 if( !Got.coda )
   stop( "Using the summary.MCmcmc function requires that\n",
         "the package 'coda' is installed.\n",
@@ -82,13 +90,21 @@ invisible( list( conv.array = conv.array,
                    mean.par = mean.par ) )
 }
 
+#' Print a MCmcmc object
+#'
+#' @param x an object used to select a method.
+#' @param ... further arguments passed to or from other methods.
+#' @param digits Number of digits to print
+#' @param alpha Significance level
+#' @rdname print
+#' @export
 print.MCmcmc <-
 function( x,
      digits = 3,
       alpha = 0.05,
         ... )
 {
-Got.coda <- require( coda )
+Got.coda <- requireNamespace( "coda" )
 if( !Got.coda )
   stop( "Using the print.MCmcmc function requires that\n",
         "the package 'coda' is installed.\n",
