@@ -375,7 +375,7 @@ Methods. \emph{Journal of Clinical Chemistry and Clinical Biochemistry},
 }
 \author{
 Bendix Carstensen \email{bendix.carstensen@regionh.dk},
-\url{http://BendixCarstensen.com}.
+\url{https://BendixCarstensen.com}.
 
 Michal J. Figurski \email{mfigrs@gmail.com}
 

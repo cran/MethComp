@@ -4,16 +4,18 @@
 \name{sbp}
 \alias{sbp}
 \title{Systolic blood pressure measured by three different methods.}
-\format{A data frame with 765 observations on the following 4 variables:
+\format{
+A data frame with 765 observations on the following 4 variables:
 \describe{ \item{\code{meth}}{Methods, a factor with levels
 \code{J}(observer 1), \code{R}(observer 2) and \code{S}(machine)}
 \item{\code{item}}{Person id, numeric.} \item{\code{repl}}{Replicate
 number, a numeric vector} \item{\code{y}}{Systolic blood pressure
-masurement, a numeric vector} }}
+masurement, a numeric vector} }
+}
 \source{
 The dataset is adapted from table 1 in: JM Bland and DG Altman:
 Measuring agreement in method comparison studies. Statistical Methods in
-Medical Research, 8:136-160, 1999. Originally supplied to Bland \& Altman by
+Medical Research, 8:136-160, 1999. Originally supplied to Bland & Altman by
 E. O'Brien, see: Altman DG, Bland JM. The analysis of blood pressure data.
 In O'Brien E, O'Malley K eds. Blood pressure measurement. Amsterdam:
 Elsevier, 1991: 287-314.

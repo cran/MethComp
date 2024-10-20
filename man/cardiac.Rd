@@ -4,15 +4,17 @@
 \name{cardiac}
 \alias{cardiac}
 \title{Measurement of cardiac output by two different methods.}
-\format{A data frame with 120 observations on the following 4 variables.
+\format{
+A data frame with 120 observations on the following 4 variables.
 \describe{ \item{\code{meth}}{a factor with levels \code{IC} \code{RV}}
 \item{\code{item}}{a numeric vector giving the item number.}
 \item{\code{repl}}{a numeric vector with replicate number.}
-\item{\code{y}}{the measuremnts of cardiac output.} }}
+\item{\code{y}}{the measuremnts of cardiac output.} }
+}
 \source{
 The dataset is adapted from table 4 in: JM Bland and DG Altman:
 Measuring agreement in method comparison studies. Statistical Methods in
-Medical Research, 8:136-160, 1999. Originally supplied to Bland \& Altman by
+Medical Research, 8:136-160, 1999. Originally supplied to Bland & Altman by
 Dr LS Bowling, see: Bowling LS, Sageman WS, O'Connor SM, Cole R, Amundson
 DE.  Lack of agreement between measurement of ejection fraction by impedance
 cardiography versus radionuclide ventriculography. Critical Care Medicine
